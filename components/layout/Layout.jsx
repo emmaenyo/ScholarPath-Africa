@@ -158,14 +158,9 @@ export default function Layout({
       {/* Navbar */}
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2 flex-shrink-0" aria-label="ScholarPath Africa Home">
-              <div className="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">S</span>
-              </div>
-              <span className="font-display font-bold text-gray-900 text-lg hidden sm:block">
-                Scholar<span className="text-green-600">Path</span> Africa
-              </span>
+          <div className="flex items-center justify-between h-14 md:h-16">
+            <Link href="/" className="flex items-center flex-shrink-0" aria-label="ScholarPath Africa Home">
+              <img src="/logo.svg" alt="ScholarPath Africa" style={{height: '36px', width: 'auto', maxWidth: '180px'}} />
             </Link>
 
             <div className="hidden md:flex items-center gap-1">
