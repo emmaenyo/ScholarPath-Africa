@@ -36,6 +36,7 @@ export default function Layout({
   const navLinks = [
     { href: '/scholarships', label: 'Scholarships' },
     { href: '/countries', label: 'Countries' },
+    { href: '/journals', label: 'Journals' },
     { href: '/blog', label: 'Blog' },
     { href: '/tools', label: 'Tools' },
   ]
