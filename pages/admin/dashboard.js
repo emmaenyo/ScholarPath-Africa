@@ -282,6 +282,7 @@ export default function AdminDashboard() {
     { id: 'blog', label: '📝 Blog' },
     { id: 'import', label: '📥 Import' },
     { id: 'automation', label: '🤖 Automation' },
+    { id: 'subscribers', label: '📧 Subscribers' },
   ];
 
   if (loading) return (
@@ -786,6 +787,99 @@ export default function AdminDashboard() {
           </div>
         )}
 
+        {activeTab === 'subscribers' && (
+          <SubscribersTab showMsg={showMsg} />
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function SubscribersTab({ showMsg }) {
+  const [subscribers, setSubscribers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    fetch('/api/admin/subscribers', { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => { setSubscribers(data.subscribers || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
+
+  async function handleDelete(id, email) {
+    if (!confirm(`Remove ${email} from subscribers?`)) return;
+    await fetch(`/api/admin/subscribers?id=${id}`, { method: 'DELETE', credentials: 'include' });
+    setSubscribers(s => s.filter(sub => sub.id !== id));
+    showMsg('✅ Subscriber removed', 'success');
+  }
+
+  async function exportCSV() {
+    const headers = 'id,name,email,subscribed_at';
+    const rows = subscribers.map(s => `${s.id},"${s.name || ''}","${s.email}","${s.created_at}"`);
+    const csv = [headers, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `subscribers-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+  }
+
+  const filtered = subscribers.filter(s =>
+    !search || s.email.toLowerCase().includes(search.toLowerCase()) || (s.name || '').toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h2 className="font-bold text-gray-900 text-xl">📧 Subscribers ({subscribers.length})</h2>
+        <button onClick={exportCSV} className="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-green-700 transition-colors">
+          ⬇️ Export CSV
+        </button>
+      </div>
+
+      <input type="text" placeholder="🔍 Search by name or email..."
+        value={search} onChange={e => setSearch(e.target.value)}
+        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500" />
+
+      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+        {loading ? (
+          <div className="text-center py-12 text-gray-400">Loading...</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">#</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Subscribed</th>
+                  <th className="text-left px-4 py-3 font-medium text-gray-600">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filtered.map((sub, i) => (
+                  <tr key={sub.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-gray-400 text-xs">{i + 1}</td>
+                    <td className="px-4 py-3 font-medium text-gray-800">{sub.email}</td>
+                    <td className="px-4 py-3 text-gray-600">{sub.name || <span className="text-gray-300 italic">—</span>}</td>
+                    <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                      {sub.created_at ? new Date(sub.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <button onClick={() => handleDelete(sub.id, sub.email)} className="text-red-500 hover:text-red-700 text-xs font-medium">Remove</button>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && (
+                  <tr><td colSpan={5} className="text-center py-12 text-gray-400">No subscribers found</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
