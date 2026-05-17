@@ -1,6 +1,6 @@
 # ScholarPath Africa 🌍
 
-A full-stack scholarship discovery platform for African students — built with Next.js, SQLite, and Tailwind CSS.
+A full-stack scholarships discovery platform for African students — built with Next.js, SQLite, and Tailwind CSS.
 
 ## Features
 
