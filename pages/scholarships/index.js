@@ -135,7 +135,7 @@ export async function getServerSideProps({ query }) {
   try {
     const { getScholarships, getCountries } = require('../../lib/db')
     const page = parseInt(query.page) || 1
-    const { items, total, pages } = await getScholarships({
+    const { scholarships: items, total, totalPages: pages } = await getScholarships({
       country: query.country || '',
       type: query.type || '',
       degree: query.degree || '',
