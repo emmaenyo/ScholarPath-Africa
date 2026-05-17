@@ -1,6 +1,7 @@
 // pages/blog/[slug].js
 import Link from 'next/link'
 import Layout from '../../components/layout/Layout'
+import AdBanner from '../../components/ui/AdBanner'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://scholarpathafrica.com'
 
@@ -173,6 +174,9 @@ export default function BlogPost({ post, recent, relatedPosts }) {
               style={{ lineHeight: '1.8' }}
               dangerouslySetInnerHTML={{ __html: renderMarkdown(post.content) }}
             />
+
+            {/* Ad spot — mid article */}
+            <AdBanner slot="leaderboard" className="my-8" />
 
             {/* Internal links CTA */}
             <div className="mt-10 bg-green-50 border border-green-100 rounded-2xl p-6">
