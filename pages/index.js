@@ -249,9 +249,9 @@ export default function Home({ featured, countries, stats }) {
 export async function getServerSideProps() {
   try {
     const { getFeaturedScholarships, getCountries, getStats } = require('../lib/db')
-    const featured = getFeaturedScholarships(6)
-    const countries = getCountries()
-    const stats = getStats()
+    const featured = await getFeaturedScholarships(6)
+    const countries = await getCountries()
+    const stats = await getStats()
     return { props: { featured, countries, stats } }
   } catch (e) {
     console.error(e)
