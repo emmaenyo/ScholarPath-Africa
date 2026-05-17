@@ -2,103 +2,109 @@
 import Link from 'next/link'
 
 const FUNDING_LABELS = {
-  fully_funded: { label: 'Fully Funded', class: 'badge-green' },
-  partial: { label: 'Partial', class: 'badge-gold' },
-  paid: { label: 'Paid', class: 'badge-blue' },
+  full: { label: 'Fully Funded', class: 'bg-green-100 text-green-700' },
+  fully_funded: { label: 'Fully Funded', class: 'bg-green-100 text-green-700' },
+  partial: { label: 'Partial Funding', class: 'bg-amber-100 text-amber-700' },
+  paid: { label: 'Paid', class: 'bg-blue-100 text-blue-700' },
+  stipend: { label: 'Stipend', class: 'bg-blue-100 text-blue-700' },
+  free: { label: 'Free', class: 'bg-green-100 text-green-700' },
 }
 
 const TYPE_ICONS = {
   scholarship: '🎓',
   fellowship: '🏅',
   internship: '💼',
-  'exchange-program': '🔄',
+  conference: '🎤',
   'research-grant': '🔬',
-  'training-program': '📚',
+  'exchange-program': '✈️',
+}
+
+const TYPE_LABELS = {
+  scholarship: 'Scholarship',
+  fellowship: 'Fellowship',
+  internship: 'Internship',
+  conference: 'Conference',
+  'research-grant': 'Research Grant',
+  'exchange-program': 'Exchange Program',
 }
 
 const DEGREE_LABELS = {
+  Bachelors: "Bachelor's",
+  Masters: "Master's",
+  PhD: 'PhD',
+  All: 'All Levels',
+  Postdoc: 'Postdoc',
+  'Non-degree': 'Open',
   bachelors: "Bachelor's",
   masters: "Master's",
   phd: 'PhD',
   all: 'All Levels',
-  postdoc: 'Postdoc',
 }
 
 export default function ScholarshipCard({ scholarship }) {
-  const funding = FUNDING_LABELS[scholarship.funding_type] || { label: scholarship.funding_type, class: 'badge-gray' }
+  const funding = FUNDING_LABELS[scholarship.funding_type] || { label: scholarship.funding_type, class: 'bg-gray-100 text-gray-600' }
+  const typeLabel = TYPE_LABELS[scholarship.type] || scholarship.type
+  const typeIcon = TYPE_ICONS[scholarship.type] || '🎓'
+  const degreeLabel = DEGREE_LABELS[scholarship.degree_level] || scholarship.degree_level
 
   return (
-    <div className="card card-hover p-5 flex flex-col h-full">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <span className="text-2xl flex-shrink-0 mt-0.5">
-          {TYPE_ICONS[scholarship.type] || '🎓'}
+    <div className="card p-5 flex flex-col h-full hover:shadow-md transition-shadow">
+      {/* Badges */}
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${funding.class}`}>
+          {funding.label}
         </span>
-        <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap gap-1.5 mb-2">
-            <span className={funding.class}>{funding.label}</span>
-            {scholarship.visa_sponsored === 1 && (
-              <span className="badge badge-blue">✈️ Visa</span>
-            )}
-            {scholarship.is_featured === 1 && (
-              <span className="badge bg-amber-50 text-amber-700">⭐ Featured</span>
-            )}
-          </div>
-        </div>
+        <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-blue-50 text-blue-700">
+          {typeIcon} {typeLabel}
+        </span>
+        {scholarship.visa_sponsored === 1 && (
+          <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-amber-50 text-amber-700">✈️ Visa</span>
+        )}
+        {scholarship.is_featured === 1 && (
+          <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-purple-50 text-purple-700">⭐ Featured</span>
+        )}
       </div>
 
       {/* Title */}
-      <h3 className="font-heading font-semibold text-gray-900 text-lg leading-tight mb-2 line-clamp-2">
+      <h3 className="font-display font-semibold text-gray-900 text-base leading-tight mb-2 line-clamp-2">
         {scholarship.title}
       </h3>
 
       {/* Meta */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mb-3">
-        <span className="flex items-center gap-1">
-          🌍 {scholarship.country}
-        </span>
-        <span className="flex items-center gap-1">
-          📚 {DEGREE_LABELS[scholarship.degree_level] || scholarship.degree_level}
-        </span>
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500 mb-3">
+        <span>🌍 {scholarship.country}</span>
+        {degreeLabel && <span>📚 {degreeLabel}</span>}
+        {scholarship.host_university && <span className="truncate max-w-[140px]">🏛️ {scholarship.host_university}</span>}
       </div>
 
       {/* Description */}
-      <p className="text-sm text-gray-600 leading-relaxed line-clamp-3 flex-1 mb-4">
+      <p className="text-sm text-gray-600 leading-relaxed line-clamp-2 flex-1 mb-3">
         {scholarship.description}
       </p>
 
+      {/* Amount */}
+      {scholarship.amount && (
+        <div className="text-xs text-green-700 font-medium bg-green-50 px-2 py-1 rounded-lg mb-3 inline-block w-fit">
+          💰 {scholarship.amount}
+        </div>
+      )}
+
       {/* Deadline */}
       {scholarship.deadline && (
-        <div className="flex items-center gap-1.5 text-sm mb-4">
-          <span className="text-gray-400">⏰</span>
-          <span className="text-gray-600">Deadline: <strong className="text-gray-800">{scholarship.deadline}</strong></span>
+        <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-4">
+          <span>⏰</span>
+          <span>Deadline: <strong className="text-gray-700">{scholarship.deadline}</strong></span>
         </div>
       )}
 
-      {/* Host */}
-      {scholarship.host_university && (
-        <div className="flex items-center gap-1.5 text-xs text-gray-400 mb-4">
-          <span>🏛️</span>
-          <span className="truncate">{scholarship.host_university}</span>
-        </div>
-      )}
-
-      {/* Actions */}
-      <div className="flex gap-2 mt-auto pt-2 border-t border-gray-50">
+      {/* Single CTA — always works */}
+      <div className="mt-auto pt-3 border-t border-gray-100">
         <Link
           href={`/scholarships/${scholarship.slug}`}
-          className="flex-1 text-center text-sm font-medium text-brand-600 hover:text-brand-700 py-2 px-3 rounded-lg hover:bg-brand-50 transition-colors"
+          className="block w-full text-center text-sm font-semibold bg-green-600 hover:bg-green-700 text-white py-2.5 px-4 rounded-xl transition-colors"
         >
-          View Details
+          View Details & Apply →
         </Link>
-        <a
-          href={scholarship.apply_link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex-1 text-center text-sm font-medium bg-brand-600 text-white py-2 px-3 rounded-lg hover:bg-brand-700 transition-colors"
-        >
-          Apply Now →
-        </a>
       </div>
     </div>
   )
