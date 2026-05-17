@@ -1,0 +1,41 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="grad" cx="25%" cy="50%">
+      <stop offset="0%" stop-color="#15803d" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#0f172a"/>
+  <rect width="1200" height="630" fill="url(#grad)"/>
+
+  <!-- Large hexagon mark -->
+  <polygon points="160,60 280,125 280,255 160,320 40,255 40,125" fill="#15803d"/>
+  <polygon points="160,112 220,142 160,172 100,142" fill="white"/>
+  <rect x="210" y="142" width="10" height="46" fill="white"/>
+  <circle cx="215" cy="193" r="13" fill="#fbbf24"/>
+  <circle cx="94" cy="228" r="10" fill="#4ade80"/>
+  <circle cx="124" cy="240" r="10" fill="#4ade80"/>
+  <circle cx="155" cy="246" r="10" fill="#4ade80"/>
+  <circle cx="186" cy="240" r="10" fill="#4ade80"/>
+
+  <!-- Wordmark -->
+  <text x="320" y="180" font-family="Arial,sans-serif" font-size="80" font-weight="700" fill="white">Scholar<tspan fill="#4ade80">Path</tspan></text>
+  <text x="322" y="240" font-family="Arial,sans-serif" font-size="28" font-weight="600" fill="#9ca3af" letter-spacing="12">AFRICA</text>
+  <text x="322" y="290" font-family="Arial,sans-serif" font-size="22" fill="#6b7280">Your path to global education</text>
+
+  <!-- Stats row -->
+  <rect x="100" y="380" width="220" height="90" rx="14" fill="#15803d" opacity="0.25"/>
+  <text x="210" y="420" text-anchor="middle" font-family="Arial,sans-serif" font-size="36" font-weight="700" fill="white">500+</text>
+  <text x="210" y="452" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#86efac">Opportunities</text>
+
+  <rect x="340" y="380" width="220" height="90" rx="14" fill="#15803d" opacity="0.25"/>
+  <text x="450" y="420" text-anchor="middle" font-family="Arial,sans-serif" font-size="36" font-weight="700" fill="white">54</text>
+  <text x="450" y="452" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#86efac">African Countries</text>
+
+  <rect x="580" y="380" width="220" height="90" rx="14" fill="#15803d" opacity="0.25"/>
+  <text x="690" y="420" text-anchor="middle" font-family="Arial,sans-serif" font-size="36" font-weight="700" fill="white">Free</text>
+  <text x="690" y="452" text-anchor="middle" font-family="Arial,sans-serif" font-size="15" fill="#86efac">Always Free</text>
+
+  <!-- URL -->
+  <text x="100" y="560" font-family="Arial,sans-serif" font-size="20" fill="#4b5563">scholarpathafrica.com</text>
+</svg>
