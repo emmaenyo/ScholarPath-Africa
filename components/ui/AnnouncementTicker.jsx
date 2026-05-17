@@ -3,21 +3,23 @@ import Link from 'next/link';
 
 const announcements = [
   '🆕 New scholarships added daily — bookmark this page and check back often!',
-  '🎓 Chevening Scholarship 2026 applications now open — Deadline: November 2025',
-  '💰 Fully funded opportunities updated every week — don\'t miss your chance!',
-  '🌍 500+ scholarships, fellowships & internships for African students',
+  '🎓 Fully funded scholarships for African students updated every week!',
+  '💰 Hundreds of fully funded opportunities available — apply before deadlines close!',
+  '🌍 500+ scholarships, fellowships & internships for African students worldwide',
   '✈️ Visa-sponsored opportunities available — filter by "Visa Sponsored" to find them',
-  '📅 Set a reminder: DAAD Scholarship deadline is October 2025',
-  '🏅 New fellowships added — check the Fellowships section today!',
+  '🏅 New fellowships just added — check the Fellowships section today!',
   '💼 Paid internships at the UN, World Bank & IMF — apply now!',
   '🔔 Subscribe to get notified when new opportunities are added!',
   '🎤 International conferences with full funding for African scholars — browse now!',
-  '📝 New blog post: How to write a winning scholarship personal statement',
-  '⏰ Gates Cambridge Scholarship opens October 2025 — start preparing now!',
+  '📝 New blog posts added regularly — tips, guides, and application advice!',
+  '⏰ Deadlines approaching — check your saved scholarships today!',
+  '🌟 Featured scholarships updated — see what\'s new this week!',
+  '📚 Free tools available — SOP Generator, CV Guide, Visa Tips and more!',
+  '🔍 Use our search filters to find scholarships that match your profile!',
+  '💡 Tip: Apply to at least 5 scholarships to maximise your chances!',
 ];
 
 export default function AnnouncementTicker() {
-  // Duplicate announcements for seamless loop
   const items = [...announcements, ...announcements];
 
   return (
