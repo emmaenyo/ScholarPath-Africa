@@ -159,8 +159,13 @@ export default function Layout({
       <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Main navigation">
           <div className="flex items-center justify-between h-14 md:h-16">
-            <Link href="/" className="flex items-center flex-shrink-0" aria-label="ScholarPath Africa Home">
-              <img src="/logo.svg" alt="ScholarPath Africa" style={{height: '36px', width: 'auto', maxWidth: '180px'}} />
+            <Link href="/" className="flex items-center gap-2 flex-shrink-0" aria-label="ScholarPath Africa Home">
+              <div style={{width:'36px', height:'36px', background:'#15803d', borderRadius:'8px', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0}}>
+                <span style={{color:'white', fontWeight:'700', fontSize:'20px', fontFamily:'Georgia,serif'}}>S</span>
+              </div>
+              <span style={{fontWeight:'700', fontSize:'17px', color:'#111827', whiteSpace:'nowrap'}}>
+                Scholar<span style={{color:'#16a34a'}}>Path</span> Africa
+              </span>
             </Link>
 
             <div className="hidden md:flex items-center gap-1">
