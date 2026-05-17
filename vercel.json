@@ -3,19 +3,10 @@
   "buildCommand": "npm run build",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "functions": {
-    "pages/api/**/*.js": {
-      "maxDuration": 10
-    }
-  },
-  "headers": [
+  "crons": [
     {
-      "source": "/sitemap.xml",
-      "headers": [{ "key": "Cache-Control", "value": "public, s-maxage=86400" }]
-    },
-    {
-      "source": "/robots.txt",
-      "headers": [{ "key": "Cache-Control", "value": "public, s-maxage=86400" }]
+      "path": "/api/cron/auto-scholarships",
+      "schedule": "0 8 1 * *"
     }
   ]
 }
