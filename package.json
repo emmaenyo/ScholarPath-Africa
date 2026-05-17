@@ -6,24 +6,18 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "db:init": "node scripts/init-db.js",
-    "db:seed": "node scripts/seed.js",
-    "import:scholarships": "node scripts/import-scholarships.js"
+    "lint": "next lint"
   },
   "dependencies": {
     "next": "14.2.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "better-sqlite3": "^9.4.3",
+    "@libsql/client": "^0.14.0",
     "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
     "next-seo": "^6.5.0",
     "date-fns": "^3.6.0",
-    "papaparse": "^5.4.1",
-    "axios": "^1.6.8",
-    "cheerio": "^1.0.0-rc.12",
-    "multer": "^1.4.5-lts.1"
+    "papaparse": "^5.4.1"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.19",
