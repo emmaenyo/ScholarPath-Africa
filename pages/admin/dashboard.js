@@ -1,364 +1,434 @@
 // pages/admin/dashboard.js
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/router'
-import Head from 'next/head'
-import Link from 'next/link'
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 export default function AdminDashboard() {
-  const router = useRouter()
-  const [stats, setStats] = useState(null)
-  const [scholarships, setScholarships] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('scholarships')
-  const [editingId, setEditingId] = useState(null)
-  const [showAddForm, setShowAddForm] = useState(false)
-
-  const emptyForm = {
-    title: '', country: '', country_code: '', host_university: '', degree_level: 'masters',
-    type: 'scholarship', funding_type: 'fully_funded', deadline: '', deadline_date: '',
-    description: '', eligibility: '', benefits: '', subjects: '', apply_link: '',
-    official_website: '', visa_sponsored: 0, open_to_africans: 1, is_featured: 0,
-  }
-  const [form, setForm] = useState(emptyForm)
-  const [formMsg, setFormMsg] = useState('')
+  const router = useRouter();
+  const [stats, setStats] = useState({ scholarships: 0, countries: 0, blog_posts: 0, subscribers: 0 });
+  const [scholarships, setScholarships] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [autoEnabled, setAutoEnabled] = useState(true);
+  const [lastRun, setLastRun] = useState(null);
+  const [triggering, setTriggering] = useState(false);
+  const [message, setMessage] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [editingScholarship, setEditingScholarship] = useState(null);
+  const [form, setForm] = useState({
+    title: '', country: '', type: 'scholarship', degree_level: 'Masters',
+    funding_type: 'full', amount: '', deadline: '', description: '',
+    eligibility: '', benefits: '', subjects: '', host_university: '',
+    host_country: '', official_url: '', visa_sponsored: false, is_featured: false,
+  });
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    loadData();
+  }, []);
 
-  async function fetchData() {
-    setLoading(true)
+  async function loadData() {
     try {
-      const [statsRes, scholRes] = await Promise.all([
-        fetch('/api/admin/stats', { headers: { Authorization: `Bearer ${getCookie('admin_token')}` } }),
-        fetch('/api/admin/scholarships', { headers: { Authorization: `Bearer ${getCookie('admin_token')}` } }),
-      ])
-      if (statsRes.status === 401 || scholRes.status === 401) {
-        router.push('/admin')
-        return
+      const [statsRes, settingsRes] = await Promise.all([
+        fetch('/api/admin/stats', { credentials: 'include' }),
+        fetch('/api/admin/settings', { credentials: 'include' }),
+      ]);
+      if (statsRes.status === 401) { router.push('/admin'); return; }
+      const statsData = await statsRes.json();
+      const settingsData = await settingsRes.json();
+      setStats(statsData);
+      setAutoEnabled(settingsData.auto_scholarships_enabled !== '0');
+      setLastRun(settingsData.last_auto_run || null);
+    } catch (e) {}
+    await loadScholarships();
+    setLoading(false);
+  }
+
+  async function loadScholarships(q = '') {
+    const res = await fetch(`/api/admin/scholarships?search=${q}&limit=50`, { credentials: 'include' });
+    const data = await res.json();
+    setScholarships(data.scholarships || []);
+  }
+
+  async function handleLogout() {
+    await fetch('/api/admin/logout', { credentials: 'include' });
+    router.push('/admin');
+  }
+
+  async function toggleAuto(val) {
+    setAutoEnabled(val);
+    await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ key: 'auto_scholarships_enabled', value: val ? '1' : '0' }),
+    });
+    showMessage(val ? '✅ Auto-generation enabled' : '⏸️ Auto-generation disabled');
+  }
+
+  async function triggerNow() {
+    setTriggering(true);
+    showMessage('⏳ Generating scholarships via OpenAI...');
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ trigger_now: true }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showMessage(`✅ Added ${data.added} scholarships, skipped ${data.skipped} duplicates`);
+        loadData();
+      } else {
+        showMessage(`ℹ️ ${data.message || data.error}`);
       }
-      const [statsData, scholData] = await Promise.all([statsRes.json(), scholRes.json()])
-      setStats(statsData)
-      setScholarships(scholData.items || [])
-    } catch (e) {
-      console.error(e)
-    }
-    setLoading(false)
+    } catch { showMessage('❌ Error. Check OpenAI API key.'); }
+    setTriggering(false);
   }
 
-  function getCookie(name) {
-    if (typeof document === 'undefined') return ''
-    const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`))
-    return match ? match[2] : ''
+  function showMessage(msg) {
+    setMessage(msg);
+    setTimeout(() => setMessage(''), 4000);
   }
 
-  function logout() {
-    document.cookie = 'admin_token=; path=/; max-age=0'
-    router.push('/admin')
+  async function handleDelete(id) {
+    if (!confirm('Delete this scholarship?')) return;
+    await fetch(`/api/admin/scholarships/${id}`, { method: 'DELETE', credentials: 'include' });
+    showMessage('✅ Deleted');
+    loadScholarships(search);
+    loadData();
   }
 
-  function handle(e) {
-    const { name, value, type, checked } = e.target
-    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? (checked ? 1 : 0) : value }))
-  }
-
-  async function saveScholarship(e) {
-    e.preventDefault()
-    setFormMsg('')
-    const method = editingId ? 'PUT' : 'POST'
-    const url = editingId ? `/api/admin/scholarships/${editingId}` : '/api/admin/scholarships'
+  async function handleSubmit(e) {
+    e.preventDefault();
+    const method = editingScholarship ? 'PUT' : 'POST';
+    const url = editingScholarship ? `/api/admin/scholarships/${editingScholarship.id}` : '/api/admin/scholarships';
     const res = await fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getCookie('admin_token')}` },
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify(form),
-    })
+    });
     if (res.ok) {
-      setFormMsg('✅ Saved successfully!')
-      setForm(emptyForm)
-      setEditingId(null)
-      setShowAddForm(false)
-      fetchData()
-    } else {
-      const d = await res.json()
-      setFormMsg('❌ Error: ' + (d.error || 'Save failed'))
+      showMessage(editingScholarship ? '✅ Updated!' : '✅ Added!');
+      setShowForm(false);
+      setEditingScholarship(null);
+      resetForm();
+      loadScholarships(search);
+      loadData();
     }
   }
 
-  async function deleteScholarship(id) {
-    if (!confirm('Delete this scholarship?')) return
-    await fetch(`/api/admin/scholarships/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${getCookie('admin_token')}` },
-    })
-    fetchData()
+  function resetForm() {
+    setForm({ title: '', country: '', type: 'scholarship', degree_level: 'Masters', funding_type: 'full', amount: '', deadline: '', description: '', eligibility: '', benefits: '', subjects: '', host_university: '', host_country: '', official_url: '', visa_sponsored: false, is_featured: false });
   }
 
   function startEdit(s) {
-    setForm({ ...s })
-    setEditingId(s.id)
-    setShowAddForm(true)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setEditingScholarship(s);
+    setForm({ ...s });
+    setShowForm(true);
+    setActiveTab('scholarships');
+    window.scrollTo(0, 0);
   }
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-        <p className="text-gray-500">Loading admin panel...</p>
-      </div>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-gray-500 text-lg">Loading dashboard...</div>
     </div>
-  )
+  );
+
+  const tabs = [
+    { id: 'overview', label: '📊 Overview' },
+    { id: 'scholarships', label: '🎓 Scholarships' },
+    { id: 'automation', label: '🤖 Automation' },
+  ];
 
   return (
-    <>
-      <Head><title>Admin Dashboard | ScholarPath Africa</title></Head>
-      <div className="min-h-screen bg-gray-50">
-        {/* Admin header */}
-        <header className="bg-dark-900 text-white px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-brand-500 rounded-lg flex items-center justify-center font-bold text-white">S</div>
-            <span className="font-heading font-bold">ScholarPath Admin</span>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navbar */}
+      <div className="bg-green-700 text-white px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-2xl">🌍</span>
+          <div>
+            <div className="font-bold text-lg">ScholarPath Africa</div>
+            <div className="text-green-200 text-xs">Admin Dashboard</div>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/" target="_blank" className="text-gray-300 hover:text-white text-sm">View Site →</Link>
-            <button onClick={logout} className="text-gray-300 hover:text-white text-sm">Sign Out</button>
-          </div>
-        </header>
+        </div>
+        <div className="flex items-center gap-4">
+          <Link href="/" target="_blank" className="text-green-200 hover:text-white text-sm">View Site ↗</Link>
+          <button onClick={handleLogout} className="bg-green-800 hover:bg-green-900 px-4 py-1.5 rounded-lg text-sm transition-colors">
+            Logout
+          </button>
+        </div>
+      </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-          {/* Stats */}
-          {stats && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      {/* Message */}
+      {message && (
+        <div className="bg-blue-600 text-white text-sm text-center py-2 px-4">{message}</div>
+      )}
+
+      {/* Tabs */}
+      <div className="bg-white border-b px-6">
+        <div className="flex gap-1">
+          {tabs.map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === tab.id ? 'border-green-600 text-green-700' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 py-8">
+
+        {/* OVERVIEW TAB */}
+        {activeTab === 'overview' && (
+          <div className="space-y-6">
+            <h2 className="font-bold text-gray-900 text-xl">Overview</h2>
+
+            {/* Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[
-                { label: 'Total Scholarships', value: stats.scholarships, icon: '🎓' },
-                { label: 'Countries', value: stats.countries, icon: '🌍' },
-                { label: 'Blog Posts', value: stats.blogPosts, icon: '📝' },
-                { label: 'Subscribers', value: stats.subscribers, icon: '📬' },
-              ].map(s => (
-                <div key={s.label} className="card p-4 text-center">
-                  <div className="text-2xl mb-1">{s.icon}</div>
-                  <div className="text-2xl font-bold text-gray-900">{s.value}</div>
-                  <div className="text-xs text-gray-500">{s.label}</div>
+                { label: 'Scholarships', value: stats.scholarships, icon: '🎓', color: 'bg-green-50 text-green-700' },
+                { label: 'Countries', value: stats.countries, icon: '🌍', color: 'bg-blue-50 text-blue-700' },
+                { label: 'Blog Posts', value: stats.blog_posts, icon: '📝', color: 'bg-purple-50 text-purple-700' },
+                { label: 'Subscribers', value: stats.subscribers, icon: '📧', color: 'bg-amber-50 text-amber-700' },
+              ].map(stat => (
+                <div key={stat.label} className={`rounded-2xl p-5 ${stat.color}`}>
+                  <div className="text-3xl mb-1">{stat.icon}</div>
+                  <div className="text-3xl font-bold">{stat.value}</div>
+                  <div className="text-sm font-medium opacity-80">{stat.label}</div>
                 </div>
               ))}
             </div>
-          )}
 
-          {/* Add/Edit form */}
-          {showAddForm && (
-            <div className="card p-6 mb-8">
-              <div className="flex items-center justify-between mb-5">
-                <h2 className="font-heading text-xl font-bold text-gray-900">
-                  {editingId ? '✏️ Edit Scholarship' : '➕ Add Scholarship'}
-                </h2>
-                <button onClick={() => { setShowAddForm(false); setEditingId(null); setForm(emptyForm) }}
-                  className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
-              </div>
+            {/* Quick actions */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <button onClick={() => { setActiveTab('scholarships'); setShowForm(true); resetForm(); }}
+                className="bg-white border-2 border-green-200 hover:border-green-500 rounded-2xl p-5 text-left transition-colors group">
+                <div className="text-2xl mb-2">➕</div>
+                <div className="font-semibold text-gray-800 group-hover:text-green-700">Add Scholarship</div>
+                <div className="text-sm text-gray-500">Manually add a new opportunity</div>
+              </button>
+              <button onClick={() => setActiveTab('automation')}
+                className="bg-white border-2 border-blue-200 hover:border-blue-500 rounded-2xl p-5 text-left transition-colors group">
+                <div className="text-2xl mb-2">🤖</div>
+                <div className="font-semibold text-gray-800 group-hover:text-blue-700">AI Automation</div>
+                <div className="text-sm text-gray-500">{autoEnabled ? 'Currently enabled' : 'Currently disabled'}</div>
+              </button>
+              <button onClick={() => setActiveTab('scholarships')}
+                className="bg-white border-2 border-purple-200 hover:border-purple-500 rounded-2xl p-5 text-left transition-colors group">
+                <div className="text-2xl mb-2">📋</div>
+                <div className="font-semibold text-gray-800 group-hover:text-purple-700">Manage Scholarships</div>
+                <div className="text-sm text-gray-500">Edit, delete, or review listings</div>
+              </button>
+            </div>
+          </div>
+        )}
 
-              {formMsg && (
-                <div className={`rounded-xl px-4 py-3 text-sm mb-4 ${formMsg.startsWith('✅') ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                  {formMsg}
-                </div>
-              )}
+        {/* SCHOLARSHIPS TAB */}
+        {activeTab === 'scholarships' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="font-bold text-gray-900 text-xl">Scholarships ({scholarships.length})</h2>
+              <button onClick={() => { setShowForm(!showForm); setEditingScholarship(null); resetForm(); }}
+                className="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-green-700 transition-colors">
+                {showForm ? '✕ Cancel' : '+ Add New'}
+              </button>
+            </div>
 
-              <form onSubmit={saveScholarship} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
-                    <input name="title" value={form.title} onChange={handle} required className="input" placeholder="Scholarship title" />
-                  </div>
+            {/* Add/Edit Form */}
+            {showForm && (
+              <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                <h3 className="font-semibold text-gray-900 mb-5">{editingScholarship ? 'Edit Scholarship' : 'Add New Scholarship'}</h3>
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    { key: 'title', label: 'Title*', full: true },
+                    { key: 'country', label: 'Country*' },
+                    { key: 'host_university', label: 'Host University' },
+                    { key: 'host_country', label: 'Host Country' },
+                    { key: 'amount', label: 'Amount' },
+                    { key: 'deadline', label: 'Deadline' },
+                    { key: 'official_url', label: 'Official URL' },
+                    { key: 'subjects', label: 'Subjects' },
+                  ].map(({ key, label, full }) => (
+                    <div key={key} className={full ? 'md:col-span-2' : ''}>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+                      <input type="text" className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-500"
+                        value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
+                    </div>
+                  ))}
+
+                  {[
+                    { key: 'description', label: 'Description' },
+                    { key: 'eligibility', label: 'Eligibility' },
+                    { key: 'benefits', label: 'Benefits' },
+                  ].map(({ key, label }) => (
+                    <div key={key} className="md:col-span-2">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+                      <textarea rows={2} className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-500"
+                        value={form[key]} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
+                    </div>
+                  ))}
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Country *</label>
-                    <input name="country" value={form.country} onChange={handle} required className="input" placeholder="e.g. Canada" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Host University</label>
-                    <input name="host_university" value={form.host_university} onChange={handle} className="input" placeholder="e.g. University of Toronto" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Type *</label>
-                    <select name="type" value={form.type} onChange={handle} className="select">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Type</label>
+                    <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-500"
+                      value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
                       <option value="scholarship">Scholarship</option>
                       <option value="fellowship">Fellowship</option>
                       <option value="internship">Internship</option>
-                      <option value="exchange-program">Exchange Program</option>
                       <option value="research-grant">Research Grant</option>
                     </select>
                   </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Degree Level *</label>
-                    <select name="degree_level" value={form.degree_level} onChange={handle} className="select">
-                      <option value="bachelors">Bachelor's</option>
-                      <option value="masters">Master's</option>
-                      <option value="phd">PhD</option>
-                      <option value="postdoc">Postdoc</option>
-                      <option value="all">All Levels</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Funding Type *</label>
-                    <select name="funding_type" value={form.funding_type} onChange={handle} className="select">
-                      <option value="fully_funded">Fully Funded</option>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Funding Type</label>
+                    <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-500"
+                      value={form.funding_type} onChange={e => setForm(f => ({ ...f, funding_type: e.target.value }))}>
+                      <option value="full">Fully Funded</option>
                       <option value="partial">Partial</option>
                       <option value="paid">Paid</option>
                     </select>
                   </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Deadline (text)</label>
-                    <input name="deadline" value={form.deadline} onChange={handle} className="input" placeholder="e.g. November each year" />
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Degree Level</label>
+                    <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-green-500"
+                      value={form.degree_level} onChange={e => setForm(f => ({ ...f, degree_level: e.target.value }))}>
+                      <option value="Bachelors">Bachelor's</option>
+                      <option value="Masters">Master's</option>
+                      <option value="PhD">PhD</option>
+                      <option value="Non-degree">Non-degree</option>
+                    </select>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Apply Link *</label>
-                    <input name="apply_link" value={form.apply_link} onChange={handle} required type="url" className="input" placeholder="https://..." />
-                  </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
-                    <textarea name="description" value={form.description} onChange={handle} required rows={4} className="input" placeholder="Full description of the scholarship..." />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Eligibility</label>
-                    <textarea name="eligibility" value={form.eligibility} onChange={handle} rows={3} className="input" placeholder="Who can apply?" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Benefits</label>
-                    <textarea name="benefits" value={form.benefits} onChange={handle} rows={3} className="input" placeholder="What does it cover?" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Subjects</label>
-                    <input name="subjects" value={form.subjects} onChange={handle} className="input" placeholder="e.g. Engineering, Medicine, Law" />
-                  </div>
+
                   <div className="flex gap-6 items-center">
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" name="visa_sponsored" checked={form.visa_sponsored === 1} onChange={handle} className="w-4 h-4 rounded text-brand-600" />
-                      <span className="text-sm font-medium text-gray-700">Visa Sponsored</span>
+                      <input type="checkbox" checked={form.is_featured} onChange={e => setForm(f => ({ ...f, is_featured: e.target.checked }))} className="w-4 h-4 text-green-600" />
+                      <span className="text-sm text-gray-700">Featured</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" name="is_featured" checked={form.is_featured === 1} onChange={handle} className="w-4 h-4 rounded text-brand-600" />
-                      <span className="text-sm font-medium text-gray-700">Featured</span>
+                      <input type="checkbox" checked={form.visa_sponsored} onChange={e => setForm(f => ({ ...f, visa_sponsored: e.target.checked }))} className="w-4 h-4 text-green-600" />
+                      <span className="text-sm text-gray-700">Visa Sponsored</span>
                     </label>
                   </div>
-                </div>
 
-                <div className="flex gap-3 pt-2">
-                  <button type="submit" className="btn-primary">
-                    {editingId ? '💾 Update Scholarship' : '➕ Add Scholarship'}
-                  </button>
-                  <button type="button" onClick={() => { setShowAddForm(false); setEditingId(null); setForm(emptyForm) }} className="btn-outline">
-                    Cancel
-                  </button>
-                </div>
-              </form>
+                  <div className="md:col-span-2">
+                    <button type="submit" className="bg-green-600 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-green-700 transition-colors">
+                      {editingScholarship ? 'Update Scholarship' : 'Add Scholarship'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Search */}
+            <div className="flex gap-3">
+              <input type="text" placeholder="Search scholarships..." value={search}
+                onChange={e => { setSearch(e.target.value); loadScholarships(e.target.value); }}
+                className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-green-500" />
             </div>
-          )}
 
-          {/* Scholarships table */}
-          <div className="card">
-            <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-              <h2 className="font-heading font-semibold text-lg text-gray-900">Scholarships ({scholarships.length})</h2>
-              <button onClick={() => { setShowAddForm(true); setEditingId(null); setForm(emptyForm) }}
-                className="btn-primary text-sm py-2">
-                + Add Scholarship
+            {/* Table */}
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="text-left px-4 py-3 font-medium text-gray-600">Title</th>
+                      <th className="text-left px-4 py-3 font-medium text-gray-600">Country</th>
+                      <th className="text-left px-4 py-3 font-medium text-gray-600">Type</th>
+                      <th className="text-left px-4 py-3 font-medium text-gray-600">Funding</th>
+                      <th className="text-left px-4 py-3 font-medium text-gray-600">Featured</th>
+                      <th className="text-left px-4 py-3 font-medium text-gray-600">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {scholarships.map(s => (
+                      <tr key={s.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 font-medium text-gray-800 max-w-xs truncate">{s.title}</td>
+                        <td className="px-4 py-3 text-gray-600">{s.country}</td>
+                        <td className="px-4 py-3">
+                          <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full capitalize">{s.type}</span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${s.funding_type === 'full' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                            {s.funding_type === 'full' ? 'Full' : s.funding_type}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">{s.is_featured ? '⭐' : '—'}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-2">
+                            <button onClick={() => startEdit(s)} className="text-blue-600 hover:text-blue-800 text-xs font-medium">Edit</button>
+                            <button onClick={() => handleDelete(s.id)} className="text-red-500 hover:text-red-700 text-xs font-medium">Delete</button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {scholarships.length === 0 && (
+                      <tr><td colSpan={6} className="text-center py-10 text-gray-400">No scholarships found</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* AUTOMATION TAB */}
+        {activeTab === 'automation' && (
+          <div className="space-y-6 max-w-2xl">
+            <h2 className="font-bold text-gray-900 text-xl">🤖 AI Automation</h2>
+
+            {/* Toggle card */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="font-semibold text-gray-900 text-lg mb-1">Monthly Auto-Generation</h3>
+                  <p className="text-gray-500 text-sm">Automatically generates 5 new scholarships using OpenAI on the 1st of every month.</p>
+                  {lastRun && (
+                    <p className="text-gray-400 text-xs mt-2">
+                      Last run: {new Date(lastRun).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  )}
+                </div>
+                <button onClick={() => toggleAuto(!autoEnabled)}
+                  className={`relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ${autoEnabled ? 'bg-green-600' : 'bg-gray-300'}`}>
+                  <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow transition duration-200 ${autoEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
+                </button>
+              </div>
+              <div className={`mt-4 px-4 py-2 rounded-lg text-sm font-medium inline-flex items-center gap-2 ${autoEnabled ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                {autoEnabled ? '🟢 Enabled — runs on the 1st of every month' : '⏸️ Disabled — no automatic runs'}
+              </div>
+            </div>
+
+            {/* Manual trigger */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-6">
+              <h3 className="font-semibold text-gray-900 text-lg mb-1">Run Now</h3>
+              <p className="text-gray-500 text-sm mb-4">Manually generate 5 new scholarships immediately using OpenAI. Duplicates are skipped automatically.</p>
+              <button onClick={triggerNow} disabled={triggering}
+                className="bg-green-600 text-white font-semibold px-6 py-2.5 rounded-xl hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                {triggering ? '⏳ Generating...' : '⚡ Generate 5 Scholarships Now'}
               </button>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {['Title', 'Country', 'Type', 'Funding', 'Deadline', 'Featured', 'Actions'].map(h => (
-                      <th key={h} className="text-left px-4 py-3 font-medium text-gray-600 text-xs uppercase tracking-wide">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {scholarships.map(s => (
-                    <tr key={s.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900 max-w-xs truncate">{s.title}</div>
-                        <div className="text-xs text-gray-400">{s.host_university}</div>
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">{s.country}</td>
-                      <td className="px-4 py-3">
-                        <span className="badge-blue capitalize">{s.type}</span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={s.funding_type === 'fully_funded' ? 'badge-green' : 'badge-gold'}>
-                          {s.funding_type === 'fully_funded' ? 'Full' : 'Partial'}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">{s.deadline || '—'}</td>
-                      <td className="px-4 py-3">{s.is_featured === 1 ? '⭐' : '—'}</td>
-                      <td className="px-4 py-3">
-                        <div className="flex gap-2">
-                          <button onClick={() => startEdit(s)} className="text-brand-600 hover:underline text-xs font-medium">Edit</button>
-                          <button onClick={() => deleteScholarship(s.id)} className="text-red-500 hover:underline text-xs font-medium">Delete</button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {/* Info */}
+            <div className="bg-amber-50 border border-amber-100 rounded-2xl p-5 text-sm text-amber-800">
+              <h3 className="font-semibold mb-2">ℹ️ How it works</h3>
+              <ul className="space-y-1.5">
+                <li>• OpenAI generates 5 real scholarship listings each run</li>
+                <li>• Duplicates are automatically skipped</li>
+                <li>• All generated scholarships are saved as active and approved</li>
+                <li>• You can review and edit them in the Scholarships tab</li>
+                <li>• Requires a valid OpenAI API key in your Vercel environment variables</li>
+              </ul>
             </div>
           </div>
+        )}
 
-          {/* CSV Import */}
-          <div className="card p-6 mt-6">
-            <h2 className="font-heading font-semibold text-lg text-gray-900 mb-3">📤 CSV Import</h2>
-            <p className="text-sm text-gray-500 mb-4">Import scholarships in bulk via CSV. Download template first.</p>
-            <CSVImport token={typeof document !== 'undefined' ? getCookie('admin_token') : ''} onSuccess={fetchData} />
-          </div>
-        </div>
       </div>
-    </>
-  )
-}
-
-function CSVImport({ token, onSuccess }) {
-  const [file, setFile] = useState(null)
-  const [msg, setMsg] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  function downloadTemplate() {
-    const headers = ['title', 'country', 'country_code', 'host_university', 'degree_level', 'type', 'funding_type', 'deadline', 'description', 'eligibility', 'benefits', 'apply_link', 'visa_sponsored', 'is_featured']
-    const example = ['DAAD Scholarship', 'Germany', 'DE', 'Various', 'masters', 'scholarship', 'fully_funded', 'October each year', 'Full description here', 'Eligibility criteria', 'Benefits covered', 'https://daad.de', '1', '0']
-    const csv = [headers.join(','), example.join(',')].join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = 'scholarships_template.csv'
-    a.click()
-  }
-
-  async function handleUpload() {
-    if (!file) return
-    setLoading(true)
-    const data = new FormData()
-    data.append('file', file)
-    const res = await fetch('/api/admin/import-csv', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-      body: data,
-    })
-    const result = await res.json()
-    if (res.ok) {
-      setMsg(`✅ Imported ${result.imported} scholarships`)
-      onSuccess()
-    } else {
-      setMsg('❌ Import failed: ' + (result.error || 'Unknown error'))
-    }
-    setLoading(false)
-  }
-
-  return (
-    <div className="flex flex-wrap items-center gap-3">
-      <button onClick={downloadTemplate} className="btn-outline text-sm">📥 Download Template</button>
-      <input type="file" accept=".csv" onChange={e => setFile(e.target.files[0])} className="text-sm text-gray-600" />
-      {file && (
-        <button onClick={handleUpload} disabled={loading} className="btn-primary text-sm py-2">
-          {loading ? 'Importing...' : '📤 Import CSV'}
-        </button>
-      )}
-      {msg && <span className="text-sm text-gray-600">{msg}</span>}
     </div>
-  )
+  );
 }
