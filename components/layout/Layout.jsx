@@ -275,7 +275,9 @@ export default function Layout({
                 <li><Link href="/scholarships?type=internship" className="hover:text-green-400 transition-colors">💼 Internships</Link></li>
                 <li><Link href="/scholarships?type=conference" className="hover:text-green-400 transition-colors">🎤 Conferences</Link></li>
                 <li><Link href="/scholarships?type=research-grant" className="hover:text-green-400 transition-colors">🔬 Research Grants</Link></li>
+                <li><Link href="/scholarships?type=exchange-program" className="hover:text-green-400 transition-colors">🔄 Exchange Programs</Link></li>
                 <li><Link href="/scholarships?visa=1" className="hover:text-green-400 transition-colors">✈️ Visa Sponsored</Link></li>
+                <li><Link href="/journals" className="hover:text-green-400 transition-colors">📖 Journals & Conferences</Link></li>
               </ul>
             </div>
 
