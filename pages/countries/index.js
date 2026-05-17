@@ -85,7 +85,8 @@ export default function CountriesPage({ countries }) {
 export async function getServerSideProps() {
   try {
     const { getCountries } = require('../../lib/db')
-    const countries = getCountries()
+    
+    const countries = await getCountries()
     return { props: { countries } }
   } catch (e) {
     return { props: { countries: [] } }
