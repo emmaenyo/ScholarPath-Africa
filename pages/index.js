@@ -6,6 +6,7 @@ import Layout from '../components/layout/Layout'
 import ScholarshipCard from '../components/scholarship/ScholarshipCard'
 import EmailCapture from '../components/ui/EmailCapture'
 import { getFeaturedScholarships, getCountries, getStats } from '../lib/db'
+import AnnouncementTicker from '../components/ui/AnnouncementTicker'
 
 export default function Home({ featured, countries, stats }) {
   const router = useRouter()
@@ -21,6 +22,7 @@ export default function Home({ featured, countries, stats }) {
 
   return (
     <Layout>
+      <AnnouncementTicker />
       {/* HERO */}
       <section className="hero-gradient text-white py-20 md:py-32 relative overflow-hidden">
         {/* Decorative elements */}
