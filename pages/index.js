@@ -1,4 +1,5 @@
 // pages/index.js
+import Head from 'next/head'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
@@ -22,6 +23,9 @@ export default function Home({ featured, countries, stats }) {
 
   return (
     <Layout>
+      <Head>
+        <meta name="google-site-verification" content="mQ9MKDhYFG4Ny86Uu9fsZaLQ5gRRNzmhMHSYT4txG4Y" />
+      </Head>
       <AnnouncementTicker />
       {/* HERO */}
       <section className="hero-gradient text-white py-20 md:py-32 relative overflow-hidden">
@@ -69,7 +73,7 @@ export default function Home({ featured, countries, stats }) {
           {/* Quick links */}
           <div className="flex flex-wrap justify-center gap-3 mt-6">
             {[
-              { label: '✅ Fully Funded', href: '/scholarships?funding=fully_funded' },
+              { label: '✅ Fully Funded', href: '/scholarships?funding=full' },
               { label: '✈️ Visa Sponsored', href: '/scholarships?visa=1' },
               { label: '🏅 Fellowships', href: '/scholarships?type=fellowship' },
               { label: '🇬🇧 UK Scholarships', href: '/scholarships?country=United+Kingdom' },
@@ -166,11 +170,11 @@ export default function Home({ featured, countries, stats }) {
         <h2 className="section-title text-center mb-10">Explore By Category</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { icon: '🎓', title: 'Undergraduate Scholarships', desc: "Bachelor's degree funding for African students", href: '/scholarships?degree=bachelors' },
-            { icon: '🏛️', title: "Masters Scholarships", desc: "Postgraduate scholarships worldwide", href: '/scholarships?degree=masters' },
-            { icon: '🔬', title: 'PhD & Research Grants', desc: "Doctoral programs and research funding", href: '/scholarships?degree=phd' },
+            { icon: '🎓', title: 'Undergraduate Scholarships', desc: "Bachelor's degree funding for African students", href: '/scholarships?degree=Bachelors' },
+            { icon: '🏛️', title: "Masters Scholarships", desc: "Postgraduate scholarships worldwide", href: '/scholarships?degree=Masters' },
+            { icon: '🔬', title: 'PhD & Research Grants', desc: "Doctoral programs and research funding", href: '/scholarships?degree=PhD' },
             { icon: '💼', title: 'Internship Programs', desc: "Paid international internship opportunities", href: '/scholarships?type=internship' },
-            { icon: '✅', title: 'Fully Funded', desc: "All expenses covered scholarships", href: '/scholarships?funding=fully_funded' },
+            { icon: '✅', title: 'Fully Funded', desc: "All expenses covered scholarships", href: '/scholarships?funding=full' },
             { icon: '✈️', title: 'Visa Sponsored', desc: "Programs that include visa support", href: '/scholarships?visa=1' },
             { icon: '🏅', title: 'Fellowships', desc: "Prestigious fellowship programs", href: '/scholarships?type=fellowship' },
             { icon: '🔄', title: 'Exchange Programs', desc: "Short-term exchange opportunities", href: '/scholarships?type=exchange-program' },
