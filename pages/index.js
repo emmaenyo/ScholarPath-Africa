@@ -25,15 +25,7 @@ export default function Home({ featured, countries, stats }) {
     <Layout>
       <Head>
         <meta name="google-site-verification" content="mQ9MKDhYFG4Ny86Uu9fsZaLQ5gRRNzmhMHSYT4txG4Y" />
-    <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-E6PD3KTZ69"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-E6PD3KTZ69');
-</script>
+ 
       </Head>
       <AnnouncementTicker />
       {/* HERO */}
