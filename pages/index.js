@@ -239,9 +239,9 @@ export default function Home({ featured, countries, stats }) {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
-            { title: 'How to Win Scholarships as an African Student', category: 'Guide', href: '/blog/how-to-win-scholarships-african-student', time: '8 min read' },
-            { title: 'Best Countries to Study Abroad for African Students in 2024', category: 'Destinations', href: '/blog/best-countries-study-abroad-african-students', time: '6 min read' },
-            { title: 'How to Write a Winning Statement of Purpose (SOP)', category: 'Writing', href: '/blog/how-to-write-winning-statement-of-purpose', time: '7 min read' },
+            { title: 'Top 10 Fully Funded Scholarships for African Students', category: 'Scholarships', href: '/blog/top-10-fully-funded-scholarships-for-african-students-in-2025', time: '8 min read' },
+            { title: 'Best Countries to Study Abroad for African Students', category: 'Destinations', href: '/blog/best-countries-for-african-students-to-study-abroad-in-2025', time: '6 min read' },
+            { title: 'How to Write a Winning Scholarship Personal Statement', category: 'Tips', href: '/blog/how-to-write-a-winning-scholarship-personal-statement', time: '7 min read' },
           ].map(post => (
             <Link key={post.href} href={post.href} className="card card-hover p-6 group">
               <span className="badge-green mb-3 inline-block">{post.category}</span>
