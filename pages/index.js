@@ -8,6 +8,7 @@ import ScholarshipCard from '../components/scholarship/ScholarshipCard'
 import EmailCapture from '../components/ui/EmailCapture'
 import { getFeaturedScholarships, getCountries, getStats } from '../lib/db'
 import AnnouncementTicker from '../components/ui/AnnouncementTicker'
+import WhatsNewToast from '../components/ui/WhatsNewToast'
 
 export default function Home({ featured, countries, stats }) {
   const router = useRouter()
@@ -25,6 +26,7 @@ export default function Home({ featured, countries, stats }) {
     <Layout>
       <Head>
         <meta name="google-site-verification" content="mQ9MKDhYFG4Ny86Uu9fsZaLQ5gRRNzmhMHSYT4txG4Y" />
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8236303795073111" crossOrigin="anonymous"></script>
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-E6PD3KTZ69"></script>
         <script dangerouslySetInnerHTML={{ __html: `
           window.dataLayer = window.dataLayer || [];
@@ -34,6 +36,7 @@ export default function Home({ featured, countries, stats }) {
         `}} />
       </Head>
       <AnnouncementTicker />
+      <WhatsNewToast />
       {/* HERO */}
       <section className="hero-gradient text-white py-20 md:py-32 relative overflow-hidden">
         {/* Decorative elements */}
