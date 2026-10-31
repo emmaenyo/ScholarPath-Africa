@@ -1,6 +1,7 @@
 // pages/blog/[slug].js
 import Link from 'next/link'
 import Layout from '../../components/layout/Layout'
+import { blogMeta } from '../../lib/seo'
 import AdBanner from '../../components/ui/AdBanner'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://scholarpathafrica.com'
@@ -14,6 +15,7 @@ function renderMarkdown(text) {
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\*(.*?)\*/g, '<em>$1</em>')
     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" style="color:#16a34a;text-decoration:underline">$1</a>')
+    .replace(/^\d+\. (.*$)/gim, '<li style="margin-left:1.5rem;list-style:decimal;margin-bottom:0.5rem">$1</li>')
     .replace(/^- (.*$)/gim, '<li style="margin-left:1.5rem;list-style:disc;margin-bottom:0.5rem">$1</li>')
     .replace(/(<li.*<\/li>\n?)+/g, s => `<ul style="margin:1rem 0">${s}</ul>`)
     .replace(/\n\n/g, '</p><p style="margin:1rem 0;line-height:1.8;color:#374151">')
@@ -101,8 +103,8 @@ export default function BlogPost({ post, recent, relatedPosts }) {
 
   return (
     <Layout
-      title={post.title}
-      description={post.excerpt || post.title}
+      title={blogMeta(post).title}
+      description={blogMeta(post).description}
       canonical={canonicalUrl}
       keywords={keywords}
       ogType="article"
@@ -115,7 +117,6 @@ export default function BlogPost({ post, recent, relatedPosts }) {
       }}
     >
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="bg-gray-50 border-b py-3">
