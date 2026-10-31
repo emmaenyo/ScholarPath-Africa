@@ -8,9 +8,10 @@ import ScholarshipCard from '../components/scholarship/ScholarshipCard'
 import EmailCapture from '../components/ui/EmailCapture'
 import { getFeaturedScholarships, getCountries, getStats } from '../lib/db'
 import AnnouncementTicker from '../components/ui/AnnouncementTicker'
+import { homeMeta } from '../lib/seo'
 import WhatsNewToast from '../components/ui/WhatsNewToast'
 
-export default function Home({ featured, countries, stats }) {
+export default function Home({ featured, countries, stats, latestPosts = [] }) {
   const router = useRouter()
   const [search, setSearch] = useState('')
 
@@ -23,7 +24,7 @@ export default function Home({ featured, countries, stats }) {
   const featuredCountries = countries.filter(c => c.is_featured).slice(0, 6)
 
   return (
-    <Layout>
+    <Layout rawTitle={homeMeta().rawTitle} description={homeMeta().description}>
       <Head>
         <meta name="google-site-verification" content="mQ9MKDhYFG4Ny86Uu9fsZaLQ5gRRNzmhMHSYT4txG4Y" />
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8236303795073111" crossOrigin="anonymous"></script>
@@ -104,8 +105,8 @@ export default function Home({ featured, countries, stats }) {
           {[
             { value: stats.scholarships + '+', label: 'Active Scholarships' },
             { value: stats.countries + '+', label: 'Countries' },
-            { value: stats.fullyFunded + '+', label: 'Fully Funded' },
-            { value: '50K+', label: 'Students Helped' },
+            { value: (stats.fullyFunded || 0) + '+', label: 'Fully Funded' },
+            { value: (stats.blog_posts || 0) + '', label: 'Free Guides' },
           ].map(stat => (
             <div key={stat.label}>
               <div className="text-3xl font-heading font-bold text-brand-600">{stat.value}</div>
@@ -238,17 +239,13 @@ export default function Home({ featured, countries, stats }) {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { title: 'Top 10 Fully Funded Scholarships for African Students', category: 'Scholarships', href: '/blog/top-10-fully-funded-scholarships-for-african-students-in-2025', time: '8 min read' },
-            { title: 'Best Countries to Study Abroad for African Students', category: 'Destinations', href: '/blog/best-countries-for-african-students-to-study-abroad-in-2025', time: '6 min read' },
-            { title: 'How to Write a Winning Scholarship Personal Statement', category: 'Tips', href: '/blog/how-to-write-a-winning-scholarship-personal-statement', time: '7 min read' },
-          ].map(post => (
-            <Link key={post.href} href={post.href} className="card card-hover p-6 group">
+          {latestPosts.map(post => (
+            <Link key={post.slug} href={`/blog/${post.slug}`} className="card card-hover p-6 group">
               <span className="badge-green mb-3 inline-block">{post.category}</span>
               <h3 className="font-heading font-semibold text-gray-900 mb-2 group-hover:text-brand-600 transition-colors leading-snug">
                 {post.title}
               </h3>
-              <span className="text-xs text-gray-400">{post.time}</span>
+              <span className="text-xs text-gray-400">{Math.max(1, Math.ceil(String(post.content || '').split(' ').length / 200))} min read</span>
             </Link>
           ))}
         </div>
@@ -264,11 +261,15 @@ export default function Home({ featured, countries, stats }) {
 
 export async function getServerSideProps() {
   try {
-    const { getFeaturedScholarships, getCountries, getStats } = require('../lib/db')
+    const { getFeaturedScholarships, getCountries, getStats, getBlogPosts, getDb } = require('../lib/db')
     const featured = await getFeaturedScholarships(6)
     const countries = await getCountries()
     const stats = await getStats()
-    return { props: { featured, countries, stats } }
+    const ff = await getDb().execute({ sql: "SELECT COUNT(*) as c FROM scholarships WHERE is_active = 1 AND funding_type IN ('full','fully_funded')", args: [] })
+    stats.fullyFunded = Number(ff.rows[0].c)
+    stats.scholarships = Number(stats.scholarships); stats.countries = Number(stats.countries); stats.blog_posts = Number(stats.blog_posts)
+    const latestPosts = (await getBlogPosts(3)).map(p => ({ slug: p.slug, title: p.title, category: p.category, content: p.content }))
+    return { props: { featured, countries, stats, latestPosts } }
   } catch (e) {
     console.error(e)
     return { props: { featured: [], countries: [], stats: { scholarships: 0, countries: 0, fullyFunded: 0, types: 0 } } }

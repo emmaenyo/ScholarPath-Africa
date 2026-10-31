@@ -8,11 +8,12 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://scholarpathafrica.
 const SITE_NAME = 'ScholarPath Africa'
 const DEFAULT_DESC = 'Discover fully funded scholarships, fellowships, internships and study abroad programs for African students. Find opportunities in Canada, UK, USA, Germany, Australia and more.'
 const DEFAULT_KEYWORDS = 'scholarships for African students, fully funded scholarships Africa, study abroad Africa, fellowships Africa, internships Africa, scholarship application tips, DAAD scholarship, Chevening scholarship, Commonwealth scholarship, Fulbright scholarship'
-const DEFAULT_IMAGE = `${SITE_URL}/og-image.jpg`
+const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`
 
 export default function Layout({
   children,
   title,
+  rawTitle,
   description,
   canonical,
   keywords,
@@ -25,7 +26,7 @@ export default function Layout({
   const [megaOpen, setMegaOpen] = useState(false)
   const router = useRouter()
 
-  const siteTitle = title
+  const siteTitle = rawTitle ? rawTitle : title
     ? `${title} | ${SITE_NAME}`
     : `${SITE_NAME} — Scholarships, Fellowships & Study Abroad for African Students`
   const siteDesc = description || DEFAULT_DESC
@@ -337,6 +338,8 @@ export default function Layout({
             <div className="flex items-center gap-6 text-xs text-gray-500">
               <Link href="/sitemap.xml" className="hover:text-gray-300">Sitemap</Link>
               <Link href="/privacy" className="hover:text-gray-300">Privacy Policy</Link>
+              <Link href="/disclaimer" className="hover:text-gray-300">Disclaimer</Link>
+              <Link href="/terms" className="hover:text-gray-300">Terms</Link>
               <Link href="/about" className="hover:text-gray-300">About</Link>
               <Link href="/contact" className="hover:text-gray-300">Contact</Link>
               <Link href="/admin" className="hover:text-gray-300">Admin</Link>

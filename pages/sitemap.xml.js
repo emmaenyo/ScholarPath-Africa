@@ -1,7 +1,7 @@
 // pages/sitemap.xml.js
 import { getDb } from '../lib/db'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://scholarpathafrica.com'
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.scholarpathafrica.com'
 
 function generateSitemap(scholarships, countries, posts) {
   const now = new Date().toISOString().split('T')[0]
@@ -9,11 +9,6 @@ function generateSitemap(scholarships, countries, posts) {
   const staticPages = [
     { url: '', priority: '1.0', changefreq: 'daily' },
     { url: '/scholarships', priority: '0.9', changefreq: 'daily' },
-    { url: '/scholarships?funding=full', priority: '0.8', changefreq: 'daily' },
-    { url: '/scholarships?type=fellowship', priority: '0.8', changefreq: 'daily' },
-    { url: '/scholarships?type=internship', priority: '0.8', changefreq: 'daily' },
-    { url: '/scholarships?type=conference', priority: '0.7', changefreq: 'weekly' },
-    { url: '/scholarships?visa=1', priority: '0.8', changefreq: 'daily' },
     { url: '/countries', priority: '0.8', changefreq: 'weekly' },
     { url: '/blog', priority: '0.8', changefreq: 'daily' },
     { url: '/tools', priority: '0.7', changefreq: 'monthly' },
@@ -25,6 +20,9 @@ function generateSitemap(scholarships, countries, posts) {
     { url: '/tools/recommendation-template', priority: '0.6', changefreq: 'monthly' },
     { url: '/about', priority: '0.5', changefreq: 'monthly' },
     { url: '/contact', priority: '0.4', changefreq: 'monthly' },
+    { url: '/journals', priority: '0.6', changefreq: 'weekly' },
+    { url: '/disclaimer', priority: '0.3', changefreq: 'yearly' },
+    { url: '/terms', priority: '0.3', changefreq: 'yearly' },
     { url: '/privacy', priority: '0.3', changefreq: 'yearly' },
   ]
 
@@ -43,7 +41,7 @@ function generateSitemap(scholarships, countries, posts) {
 
   ${scholarships.map(s => `<url>
     <loc>${SITE_URL}/scholarships/${s.slug}</loc>
-    <lastmod>${now}</lastmod>
+    <lastmod>${String(s.created_at || now).slice(0,10)}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>`).join('\n  ')}
@@ -57,7 +55,7 @@ function generateSitemap(scholarships, countries, posts) {
 
   ${posts.map(p => `<url>
     <loc>${SITE_URL}/blog/${p.slug}</loc>
-    <lastmod>${now}</lastmod>
+    <lastmod>${String(p.created_at || now).slice(0,10)}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>`).join('\n  ')}
@@ -70,9 +68,9 @@ export default function Sitemap() {}
 export async function getServerSideProps({ res }) {
   const db = getDb()
   const [s, c, p] = await Promise.all([
-    db.execute({ sql: 'SELECT slug FROM scholarships WHERE is_active = 1', args: [] }),
+    db.execute({ sql: 'SELECT slug, created_at FROM scholarships WHERE is_active = 1', args: [] }),
     db.execute({ sql: 'SELECT slug FROM countries', args: [] }),
-    db.execute({ sql: 'SELECT slug FROM blog_posts WHERE is_published = 1', args: [] }),
+    db.execute({ sql: 'SELECT slug, created_at FROM blog_posts WHERE is_published = 1', args: [] }),
   ])
 
   const sitemap = generateSitemap(s.rows, c.rows, p.rows)
