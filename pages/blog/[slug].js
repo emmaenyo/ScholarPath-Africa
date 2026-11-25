@@ -155,8 +155,6 @@ export default function BlogPost({ post, recent, relatedPosts }) {
 
             <div className="flex items-center gap-4 text-sm text-gray-400 mb-8 pb-8 border-b border-gray-100 flex-wrap">
               <span>✍️ By <strong className="text-gray-600">{post.author || 'ScholarPath Africa'}</strong></span>
-              <span>•</span>
-              <Link href="/editorial-policy" className="underline hover:text-green-700">How we write our guides</Link>
               {post.created_at && (
                 <>
                   <span>•</span>
@@ -184,7 +182,7 @@ export default function BlogPost({ post, recent, relatedPosts }) {
             {/* Internal links CTA */}
             <div className="mt-10 bg-green-50 border border-green-100 rounded-2xl p-6">
               <h3 className="font-display font-bold text-gray-900 mb-3">🎓 Ready to Find Your Scholarship?</h3>
-              <p className="text-gray-600 text-sm mb-4">Browse our listings of scholarships, fellowships, and internships for African students.</p>
+              <p className="text-gray-600 text-sm mb-4">Browse our database of 500+ scholarships, fellowships, and internships for African students.</p>
               <div className="flex flex-wrap gap-3">
                 <Link href="/scholarships" className="btn-primary text-sm px-4 py-2">Browse All Opportunities</Link>
                 <Link href="/scholarships?funding=full" className="btn-secondary text-sm px-4 py-2">Fully Funded Only</Link>

@@ -136,10 +136,17 @@ export default function Home({ featured, countries, stats, latestPosts = [] }) {
 
         <div className="text-center mt-8">
           <Link href="/scholarships" className="btn-primary">
-            Browse All {stats.scholarships} Opportunities →
+            Browse All {stats.scholarships}+ Scholarships →
           </Link>
         </div>
       </section>
+
+      {/* AD BANNER */}
+      <div className="max-w-5xl mx-auto px-4 mb-8">
+        <div className="rounded-xl border-2 border-dashed border-gray-100 bg-gray-50 p-3 text-center text-xs text-gray-400 py-5">
+          Advertisement
+        </div>
+      </div>
 
       {/* STUDY DESTINATIONS */}
       <section className="bg-gray-50 py-16">
@@ -203,7 +210,7 @@ export default function Home({ featured, countries, stats, latestPosts = [] }) {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
-              { step: '01', icon: '🔍', title: 'Search', desc: 'Browse current opportunities filtered by country, degree level, and funding type.' },
+              { step: '01', icon: '🔍', title: 'Search', desc: 'Browse 100+ scholarships filtered by country, degree, and funding type.' },
               { step: '02', icon: '📋', title: 'Review', desc: 'Read eligibility requirements, benefits, and deadlines in detail.' },
               { step: '03', icon: '✍️', title: 'Prepare', desc: 'Use our free tools to craft your SOP, CV, and recommendation letters.' },
               { step: '04', icon: '🚀', title: 'Apply', desc: 'Click to apply directly on the official scholarship website.' },

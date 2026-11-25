@@ -19,9 +19,7 @@ export default function ScholarshipsPage({ scholarships, countries, total, page,
   return (
     <Layout
       title="Find Scholarships for African Students"
-      description="Search scholarships, fellowships and study abroad programmes for African students. Filter by country, degree level and funding type."
-      canonical={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.scholarpathafrica.com'}/scholarships`}
-      noindex={Object.keys(query || {}).length > 0}
+      description="Search hundreds of scholarships, fellowships, and study abroad programs for African students. Filter by country, degree level, funding type and more."
     >
       {/* Page header */}
       <div className="bg-gray-50 border-b border-gray-100 py-8">
@@ -137,7 +135,7 @@ export async function getServerSideProps({ query }) {
   try {
     const { getScholarships, getCountries } = require('../../lib/db')
     const page = parseInt(query.page) || 1
-    const { items, total, pages } = await getScholarships({
+    const { scholarships: items, total, totalPages: pages } = await getScholarships({
       country: query.country || '',
       type: query.type || '',
       degree: query.degree || '',

@@ -17,7 +17,6 @@ export default function CountryPage({ country, scholarships }) {
     <Layout
       title={`Scholarships in ${country.name}`}
       description={`Find scholarships and study opportunities in ${country.name} for African students.`}
-      noindex={safeScholarships.length < 3}
     >
       <div className="bg-gray-50 border-b py-10">
         <div className="max-w-5xl mx-auto px-4">

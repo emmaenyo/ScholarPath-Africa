@@ -2,67 +2,65 @@
 import Link from 'next/link'
 import Layout from '../components/layout/Layout'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.scholarpathafrica.com'
-
 export default function About() {
   return (
     <Layout
-      title="About ScholarPath Africa"
-      description="Who runs ScholarPath Africa, how we collect and check scholarship information, and how the site is funded."
-      canonical={`${SITE_URL}/about`}
+      title="About ScholarPath Africa — Our Mission"
+      description="ScholarPath Africa is Africa's leading scholarship discovery platform, helping African students find fully funded scholarships, fellowships, and study abroad opportunities worldwide."
+      keywords="about ScholarPath Africa, scholarships for African students, scholarship platform Africa, study abroad Africa"
+      canonical={`${process.env.NEXT_PUBLIC_SITE_URL || 'https://scholarpathafrica.com'}/about`}
     >
-      <div className="max-w-3xl mx-auto px-4 py-16">
+      <div className="max-w-4xl mx-auto px-4 py-16">
         <h1 className="font-display text-4xl font-bold text-gray-900 mb-4">About ScholarPath Africa</h1>
         <p className="text-xl text-gray-600 mb-10 leading-relaxed">
-          ScholarPath Africa is an independent website that helps African students find scholarships, fellowships, internships and study-abroad programmes — and prepare strong applications for them.
+          Helping African students discover life-changing scholarship opportunities worldwide.
         </p>
 
-        <div className="space-y-10 text-gray-700 leading-relaxed">
+        <div className="prose max-w-none text-gray-700 space-y-6">
           <section>
-            <h2 className="font-display text-2xl font-bold text-gray-900 mb-3">Why we built it</h2>
-            <p className="mb-3">
-              Good opportunities are often hard to find. Information is scattered across university pages, embassy sites and social media posts, deadlines are easy to miss, and many "scholarship" websites bury the useful details under pop-ups or ask for payment.
+            <h2 className="font-display text-2xl font-bold text-gray-900 mb-3">Our Mission</h2>
+            <p className="leading-relaxed">
+              ScholarPath Africa exists to close the information gap that prevents talented African students from accessing world-class education. Every year, billions of dollars in scholarships go unclaimed simply because students don't know they exist. We are changing that.
             </p>
-            <p>
-              We collect opportunities in one place, explain them in plain language, and always point you to the official application page. Applying to any programme listed here is free; we never charge application fees and we are not an agent for any institution.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="font-display text-2xl font-bold text-gray-900 mb-3">What you will find here</h2>
-            <ul className="list-disc pl-5 space-y-2">
-              <li><Link href="/scholarships" className="text-green-700 underline">Opportunity listings</Link> — each with eligibility, benefits, deadline, documents you usually need, and a link to the official page.</li>
-              <li><Link href="/blog" className="text-green-700 underline">Guides</Link> on personal statements, recommendation letters, interviews, visas and studying in popular destinations.</li>
-              <li><Link href="/tools" className="text-green-700 underline">Free tools</Link>: SOP Generator, CV Guide, Motivation Letter Guide, Visa Tips and an Application Checklist.</li>
-              <li><Link href="/countries" className="text-green-700 underline">Country pages</Link> summarising study options by destination.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="font-display text-2xl font-bold text-gray-900 mb-3">How we check information</h2>
-            <p className="mb-3">
-              Every listing is built from the provider's own announcement — a university, government agency, foundation or international organisation. We link to that source on each page and record when the listing was last reviewed. Where a provider's page is unclear or contradicts another source, we say so or leave the detail out instead of guessing.
-            </p>
-            <p>
-              Read the full process, including how we handle corrections, in our <Link href="/editorial-policy" className="text-green-700 underline">editorial policy</Link>.
+            <p className="leading-relaxed">
+              We believe that where you were born should not determine how far you go. Every African student with talent, ambition, and drive deserves access to the best educational opportunities the world has to offer.
             </p>
           </section>
 
           <section>
-            <h2 className="font-display text-2xl font-bold text-gray-900 mb-3">How the site is funded</h2>
-            <p>
-              ScholarPath Africa is free to use. We may show advertising (for example through Google AdSense) and may include affiliate links to services we think students could find useful. Advertising never influences which opportunities we list or how we describe them, and ads are always labelled.
+            <h2 className="font-display text-2xl font-bold text-gray-900 mb-3">What We Do</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                { icon: '🎓', title: 'Scholarship Discovery', desc: 'We curate and update a comprehensive database of fully funded scholarships, fellowships, internships, conferences, and research grants for African students.' },
+                { icon: '📝', title: 'Application Support', desc: 'Our free tools — SOP Generator, CV Guide, Motivation Letter Guide, and Application Checklist — help students prepare competitive applications.' },
+                { icon: '🌍', title: 'Country Guides', desc: 'Detailed guides on studying in the UK, USA, Germany, Canada, Australia, and more — covering universities, visas, costs, and life abroad.' },
+                { icon: '📰', title: 'Scholarship Blog', desc: 'Expert articles on scholarship tips, application strategies, visa guides, and success stories from African students studying abroad.' },
+              ].map(item => (
+                <div key={item.title} className="bg-green-50 rounded-xl p-5">
+                  <div className="text-2xl mb-2">{item.icon}</div>
+                  <h3 className="font-semibold text-gray-900 mb-1">{item.title}</h3>
+                  <p className="text-sm text-gray-600">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="font-display text-2xl font-bold text-gray-900 mb-3">Our Content Standards</h2>
+            <p className="leading-relaxed">
+              Every opportunity listed on ScholarPath Africa is verified for accuracy. We update our database regularly to ensure deadlines, eligibility criteria, and funding details are current. Our blog content is written by experts and reviewed for accuracy before publication.
             </p>
           </section>
 
           <section>
-            <h2 className="font-display text-2xl font-bold text-gray-900 mb-3">Get in touch</h2>
-            <p className="mb-4">
-              Found an error, an expired deadline, or an opportunity we should list? Please tell us — corrections are the most valuable feedback we get.
+            <h2 className="font-display text-2xl font-bold text-gray-900 mb-3">Start Your Journey</h2>
+            <p className="leading-relaxed mb-4">
+              Ready to find your scholarship? Browse our database of 500+ opportunities or use our free tools to prepare your application.
             </p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/contact" className="btn-primary">Contact us</Link>
-              <Link href="/scholarships" className="btn-secondary">Browse opportunities</Link>
+              <Link href="/scholarships" className="btn-primary">Browse Scholarships</Link>
+              <Link href="/tools" className="btn-secondary">Free Tools</Link>
+              <Link href="/blog" className="btn-secondary">Read Our Blog</Link>
             </div>
           </section>
         </div>
