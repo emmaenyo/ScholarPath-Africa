@@ -262,9 +262,9 @@ export default function Layout({
                 <span className="font-display font-bold text-white text-lg">ScholarPath Africa</span>
               </div>
               <p className="text-sm text-gray-400 leading-relaxed mb-4">
-                Africa's leading scholarship discovery platform. Helping African students find fully funded scholarships, fellowships, internships, and study abroad opportunities worldwide.
+                An independent guide that helps African students find fully funded scholarships, fellowships, internships, and study abroad opportunities worldwide.
               </p>
-              <p className="text-xs text-gray-500">Updated daily with new opportunities.</p>
+              <p className="text-xs text-gray-500">Listings are checked against official sources and updated regularly.</p>
             </div>
 
             <div>
@@ -340,9 +340,9 @@ export default function Layout({
               <Link href="/privacy" className="hover:text-gray-300">Privacy Policy</Link>
               <Link href="/disclaimer" className="hover:text-gray-300">Disclaimer</Link>
               <Link href="/terms" className="hover:text-gray-300">Terms</Link>
+              <Link href="/editorial-policy" className="hover:text-gray-300">Editorial Policy</Link>
               <Link href="/about" className="hover:text-gray-300">About</Link>
               <Link href="/contact" className="hover:text-gray-300">Contact</Link>
-              <Link href="/admin" className="hover:text-gray-300">Admin</Link>
             </div>
           </div>
         </div>

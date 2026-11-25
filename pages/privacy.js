@@ -1,95 +1,73 @@
-import Layout from '../components/layout/Layout';
+// pages/privacy.js
+import Layout from '../components/layout/Layout'
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.scholarpathafrica.com'
 
 export default function Privacy() {
   return (
     <Layout
       title="Privacy Policy | ScholarPath Africa"
-      description="ScholarPath Africa's privacy policy — how we collect, use, and protect your data."
+      description="How ScholarPath Africa collects, uses and protects information, including cookies and Google advertising."
+      canonical={`${SITE_URL}/privacy`}
     >
-      <div className="max-w-3xl mx-auto px-4 py-16">
+      <div className="max-w-3xl mx-auto px-4 py-16 text-gray-700 leading-relaxed">
         <h1 className="font-display text-4xl font-bold text-gray-900 mb-2">Privacy Policy</h1>
-        <p className="text-gray-500 mb-10">Last updated: January 2025</p>
+        <p className="text-gray-500 mb-10">Last updated: November 2026</p>
 
-        <div className="prose prose-scholarpath">
-          <p>
-            ScholarPath Africa ("we", "us", or "our") is committed to protecting your privacy. This policy
-            explains what data we collect, how we use it, and your rights.
-          </p>
+        <div className="space-y-8">
+          <section>
+            <h2 className="font-display text-xl font-bold text-gray-900 mb-2">1. Who we are</h2>
+            <p>ScholarPath Africa ({SITE_URL}) is a website that publishes scholarship listings and application guides for African students. You can contact us through our <a href="/contact" className="text-green-700 underline">contact page</a> or at info@scholarpathafrica.com.</p>
+          </section>
 
-          <h2>1. Information We Collect</h2>
-          <p>We collect the following types of information:</p>
-          <ul>
-            <li><strong>Email address and name</strong> — when you subscribe to our newsletter or alerts.</li>
-            <li><strong>Usage data</strong> — pages visited, scholarship views, and search queries, collected anonymously via analytics.</li>
-            <li><strong>Cookies</strong> — for session management, preferences, and analytics.</li>
-          </ul>
+          <section>
+            <h2 className="font-display text-xl font-bold text-gray-900 mb-2">2. Information we collect</h2>
+            <ul className="list-disc pl-5 space-y-1">
+              <li><strong>Information you give us:</strong> your name and email address if you subscribe to alerts or send us a message through the contact form.</li>
+              <li><strong>Usage data:</strong> pages visited, device and browser type, approximate location (country/city) and referring website, collected through cookies and similar technologies.</li>
+              <li><strong>Technical data:</strong> IP address and server logs, used for security and to prevent abuse.</li>
+            </ul>
+          </section>
 
-          <h2>2. How We Use Your Information</h2>
-          <ul>
-            <li>To send scholarship alerts, newsletters, and updates (only if you subscribe).</li>
-            <li>To improve the platform and understand which scholarships are most useful.</li>
-            <li>To display relevant advertisements via Google AdSense.</li>
-          </ul>
+          <section>
+            <h2 className="font-display text-xl font-bold text-gray-900 mb-2">3. How we use it</h2>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>To send the scholarship alerts you ask for, and to reply to your messages.</li>
+              <li>To understand which pages are useful and to improve the site.</li>
+              <li>To keep the site secure and prevent spam.</li>
+              <li>To show advertising that helps fund the site.</li>
+            </ul>
+            <p className="mt-2">We do not sell your personal information.</p>
+          </section>
 
-          <h2>3. Data Sharing</h2>
-          <p>
-            We do not sell your personal data. We may share anonymised, aggregated data with partners.
-            Third-party services we use (e.g. Google Analytics, Google AdSense) have their own privacy policies.
-          </p>
+          <section>
+            <h2 className="font-display text-xl font-bold text-gray-900 mb-2">4. Cookies and Google advertising</h2>
+            <p className="mb-2">We use cookies for essential site functions and for analytics. Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to this and other websites.</p>
+            <p className="mb-2">Google's use of advertising cookies enables it and its partners to serve ads to you based on your visit to this site and/or other sites on the internet. You can opt out of personalised advertising by visiting <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-green-700 underline">Google Ads Settings</a>. You can also visit <a href="https://www.aboutads.info" target="_blank" rel="noopener noreferrer" className="text-green-700 underline">aboutads.info</a> to opt out of some third-party vendors' use of cookies for personalised advertising.</p>
+            <p>To learn how Google uses data from sites that use its services, see <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener noreferrer" className="text-green-700 underline">policies.google.com/technologies/partner-sites</a>. You can control cookies in your browser settings; some features may not work if you block them.</p>
+          </section>
 
-          <h2>4. Google AdSense</h2>
-          <p>
-            We use Google AdSense to display ads. Google may use cookies to serve personalised ads based on
-            your browsing history. You can opt out at{' '}
-            <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer">
-              adssettings.google.com
-            </a>.
-          </p>
+          <section>
+            <h2 className="font-display text-xl font-bold text-gray-900 mb-2">5. Third-party links</h2>
+            <p>Listings link to official provider websites, which have their own privacy policies. We are not responsible for their content or practices.</p>
+          </section>
 
-          <h2>5. Cookies</h2>
-          <p>
-            We use essential cookies for functionality and analytics cookies (Google Analytics) to understand
-            traffic. You may disable cookies in your browser settings, though some features may not work.
-          </p>
+          <section>
+            <h2 className="font-display text-xl font-bold text-gray-900 mb-2">6. Data retention and your rights</h2>
+            <p>We keep subscriber and contact details only as long as needed for the purpose they were given. Depending on where you live (for example under the GDPR, Nigeria's NDPA, Kenya's Data Protection Act or South Africa's POPIA), you may have the right to access, correct or delete your data and to withdraw consent. To exercise these rights, contact us. You can unsubscribe from emails at any time.</p>
+          </section>
 
-          <h2>6. Your Rights</h2>
-          <p>You have the right to:</p>
-          <ul>
-            <li>Access the personal data we hold about you.</li>
-            <li>Request deletion of your data (email us and we will remove your subscription).</li>
-            <li>Unsubscribe from our newsletter at any time via the unsubscribe link in any email.</li>
-          </ul>
+          <section>
+            <h2 className="font-display text-xl font-bold text-gray-900 mb-2">7. Children</h2>
+            <p>The site is intended for students aged 16 and over and is not directed at children under 13. We do not knowingly collect their personal information.</p>
+          </section>
 
-          <h2>7. Data Retention</h2>
-          <p>
-            We retain subscriber email addresses until you unsubscribe. Analytics data is retained in
-            aggregate form for up to 26 months.
-          </p>
-
-          <h2>8. Security</h2>
-          <p>
-            We take reasonable technical and organisational measures to protect your data. However, no
-            internet transmission is 100% secure.
-          </p>
-
-          <h2>9. Children's Privacy</h2>
-          <p>
-            ScholarPath Africa is intended for users aged 16 and over. We do not knowingly collect data
-            from children under 16.
-          </p>
-
-          <h2>10. Changes to This Policy</h2>
-          <p>
-            We may update this policy periodically. We will notify subscribers of material changes via email.
-          </p>
-
-          <h2>11. Contact Us</h2>
-          <p>
-            For any privacy-related questions, please email us at{' '}
-            <a href="mailto:privacy@scholarpathAfrica.com">privacy@scholarpathAfrica.com</a>.
-          </p>
+          <section>
+            <h2 className="font-display text-xl font-bold text-gray-900 mb-2">8. Changes</h2>
+            <p>We may update this policy and will change the date above when we do.</p>
+          </section>
         </div>
       </div>
     </Layout>
-  );
+  )
 }

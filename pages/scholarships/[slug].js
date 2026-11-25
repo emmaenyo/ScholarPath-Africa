@@ -1,6 +1,8 @@
 // pages/scholarships/[slug].js
 import Link from 'next/link'
 import Layout from '../../components/layout/Layout'
+import { scholarshipMeta, scholarshipIndexable } from '../../lib/seo'
+import { buildInsights } from '../../lib/content'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://scholarpathafrica.com'
 
@@ -8,7 +10,7 @@ const FUNDING_LABELS = { full: 'Fully Funded', fully_funded: 'Fully Funded', par
 const DEGREE_LABELS = { Bachelors: "Bachelor's", Masters: "Master's", PhD: 'PhD', Postdoc: 'Postdoc', 'Non-degree': 'Open / Non-degree', All: 'All Levels' }
 const TYPE_LABELS = { scholarship: 'Scholarship', fellowship: 'Fellowship', internship: 'Internship', conference: 'Conference', 'research-grant': 'Research Grant', 'exchange-program': 'Exchange Program' }
 
-export default function ScholarshipDetail({ scholarship, related }) {
+export default function ScholarshipDetail({ scholarship, related, guides = [] }) {
   if (!scholarship) return (
     <Layout title="Opportunity Not Found" noindex={true}>
       <div className="text-center py-20">
@@ -24,8 +26,7 @@ export default function ScholarshipDetail({ scholarship, related }) {
   const typeLabel = TYPE_LABELS[scholarship.type] || scholarship.type
   const canonicalUrl = `${SITE_URL}/scholarships/${scholarship.slug}`
 
-  const metaTitle = `${scholarship.title} — ${typeLabel} in ${scholarship.country}`
-  const metaDesc = `${fundingLabel} ${typeLabel} for African students in ${scholarship.country}. ${scholarship.description ? scholarship.description.slice(0, 120) + '...' : ''} Deadline: ${scholarship.deadline || 'See official website'}.`
+  const { title: metaTitle, description: metaDesc, dl } = scholarshipMeta(scholarship)
   const metaKeywords = `${scholarship.title}, ${typeLabel} ${scholarship.country}, scholarships for African students, ${fundingLabel} scholarships, study in ${scholarship.country}, ${scholarship.subjects || ''}, African student ${typeLabel}`
 
   const schemaData = {
@@ -51,26 +52,16 @@ export default function ScholarshipDetail({ scholarship, related }) {
     financialAidEligible: fundingLabel,
   }
 
+  const ins = buildInsights(scholarship)
+  const indexable = scholarshipIndexable(scholarship)
+  const reviewed = scholarship.updated_at || scholarship.created_at
+  const reviewedLabel = reviewed ? new Date(String(reviewed).replace(' ', 'T')).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : ''
+
+  // FAQ markup mirrors the visible FAQ section below, so structured data always matches the page.
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
-    mainEntity: [
-      scholarship.eligibility && {
-        '@type': 'Question',
-        name: `Who is eligible for the ${scholarship.title}?`,
-        acceptedAnswer: { '@type': 'Answer', text: scholarship.eligibility },
-      },
-      scholarship.benefits && {
-        '@type': 'Question',
-        name: `What does the ${scholarship.title} cover?`,
-        acceptedAnswer: { '@type': 'Answer', text: scholarship.benefits },
-      },
-      scholarship.deadline && {
-        '@type': 'Question',
-        name: `What is the deadline for the ${scholarship.title}?`,
-        acceptedAnswer: { '@type': 'Answer', text: `The deadline for the ${scholarship.title} is ${scholarship.deadline}.` },
-      },
-    ].filter(Boolean),
+    mainEntity: ins.faqs.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
   }
 
   return (
@@ -80,6 +71,7 @@ export default function ScholarshipDetail({ scholarship, related }) {
       keywords={metaKeywords}
       canonical={canonicalUrl}
       ogType="article"
+      noindex={!indexable}
     >
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaData) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
@@ -124,6 +116,17 @@ export default function ScholarshipDetail({ scholarship, related }) {
               </div>
             </div>
 
+            {ins.dl.status === 'closed' && (
+              <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-4 mb-6 text-sm">
+                <strong>The latest deadline ({ins.dl.label}) has passed.</strong> Many programmes reopen every year — use this page to prepare, and check the official website for the next intake. See the similar opportunities below for options that may still be open.
+              </div>
+            )}
+            {ins.timeline && (
+              <div className="bg-red-50 border border-red-100 text-red-800 rounded-xl p-4 mb-6 text-sm">
+                <strong>{ins.timeline.days} day{ins.timeline.days === 1 ? '' : 's'} left</strong> until the deadline on {ins.timeline.label}.
+              </div>
+            )}
+
             {/* Apply CTA */}
             <div className="bg-green-600 text-white rounded-2xl p-6 mb-8 flex items-center justify-between flex-wrap gap-4">
               <div>
@@ -137,6 +140,11 @@ export default function ScholarshipDetail({ scholarship, related }) {
                 </a>
               )}
             </div>
+
+            <section className="mb-8">
+              <h2 className="font-display text-xl font-semibold text-gray-900 mb-3">At a Glance</h2>
+              <p className="text-gray-700 leading-relaxed">{ins.summary}</p>
+            </section>
 
             {scholarship.description && (
               <section className="mb-8">
@@ -177,36 +185,60 @@ export default function ScholarshipDetail({ scholarship, related }) {
               </section>
             )}
 
-            {/* Application tips */}
-            <section className="bg-amber-50 border border-amber-100 rounded-2xl p-6 mb-8">
-              <h2 className="font-display text-lg font-semibold text-amber-900 mb-3">💡 Application Tips</h2>
-              <ul className="space-y-2 text-sm text-amber-800">
-                <li>• Start your application at least 3 months before the deadline</li>
-                <li>• Use our <Link href="/tools/sop-generator" className="underline font-medium">SOP Generator</Link> to craft a compelling personal statement</li>
-                <li>• Request recommendation letters at least 6 weeks in advance — use our <Link href="/tools/recommendation-template" className="underline font-medium">Recommendation Template</Link></li>
-                <li>• Read our <Link href="/tools/cv-guide" className="underline font-medium">Scholarship CV Guide</Link> before preparing your resume</li>
-                {scholarship.visa_sponsored === 1 && <li>• Prepare for the visa process with our <Link href="/tools/visa-tips" className="underline font-medium">Visa Interview Tips</Link></li>}
-                <li>• Track all your applications with our <Link href="/tools/checklist" className="underline font-medium">Application Checklist</Link></li>
+            {/* Documents */}
+            <section className="mb-8">
+              <h2 className="font-display text-xl font-semibold text-gray-900 mb-3">Documents You Will Usually Need</h2>
+              <p className="text-gray-600 text-sm mb-3">Typical requirements for {degreeLabel.toLowerCase()} applications of this kind. Always confirm the exact list on the official page.</p>
+              <ul className="space-y-2 text-gray-700 text-sm list-disc pl-5">
+                {ins.docs.map(d => <li key={d}>{d}</li>)}
               </ul>
             </section>
 
-            {/* Related blog posts */}
+            {/* Advice */}
+            <section className="bg-amber-50 border border-amber-100 rounded-2xl p-6 mb-8">
+              <h2 className="font-display text-lg font-semibold text-amber-900 mb-3">💡 Before You Apply</h2>
+              {ins.funding && <p className="text-sm text-amber-900 mb-3">{ins.funding}</p>}
+              <ul className="space-y-2 text-sm text-amber-800 list-disc pl-5">
+                {ins.advice.map(a => <li key={a}>{a}</li>)}
+                <li>Prepare your essays with our <Link href="/tools/sop-generator" className="underline font-medium">SOP Generator</Link> and <Link href="/tools/cv-guide" className="underline font-medium">CV Guide</Link>, and track progress with the <Link href="/tools/checklist" className="underline font-medium">Application Checklist</Link>.</li>
+              </ul>
+            </section>
+
+            {/* Visible FAQ (matches FAQ schema) */}
             <section className="mb-8">
-              <h2 className="font-display text-xl font-semibold text-gray-900 mb-4">Related Guides</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {[
-                  { href: '/blog/how-to-write-winning-scholarship-personal-statement', label: 'How to Write a Winning Personal Statement' },
-                  { href: '/blog/how-to-write-a-statement-of-purpose-sop-for-graduate-school', label: 'How to Write a Statement of Purpose' },
-                  { href: '/blog/how-to-ask-for-a-recommendation-letter-for-scholarships', label: 'How to Ask for a Recommendation Letter' },
-                  { href: '/blog/how-to-prepare-for-a-scholarship-interview', label: 'How to Prepare for a Scholarship Interview' },
-                ].map(link => (
-                  <Link key={link.href} href={link.href}
-                    className="bg-gray-50 hover:bg-green-50 rounded-xl p-3 text-sm text-gray-700 hover:text-green-700 transition-colors">
-                    📖 {link.label} →
-                  </Link>
+              <h2 className="font-display text-xl font-semibold text-gray-900 mb-3">Frequently Asked Questions</h2>
+              <div className="space-y-4">
+                {ins.faqs.map(f => (
+                  <div key={f.q}>
+                    <h3 className="font-semibold text-gray-800 text-sm mb-1">{f.q}</h3>
+                    <p className="text-gray-600 text-sm leading-relaxed">{f.a}</p>
+                  </div>
                 ))}
               </div>
             </section>
+
+            {/* Source and review note */}
+            <section className="mb-8 text-xs text-gray-500 border-t border-gray-100 pt-4">
+              <p>
+                {reviewedLabel && <>Listing last reviewed: {reviewedLabel}. </>}
+                Details come from the provider's official announcement{scholarship.official_url ? ' (linked above)' : ''}. Deadlines and amounts can change, so confirm everything on the official site before applying. Spotted an error? <Link href="/contact" className="underline">Tell us</Link> — see our <Link href="/editorial-policy" className="underline">editorial policy</Link>.
+              </p>
+            </section>
+
+            {/* Related blog posts (live posts only) */}
+            {guides.length > 0 && (
+              <section className="mb-8">
+                <h2 className="font-display text-xl font-semibold text-gray-900 mb-4">Related Guides</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {guides.map(g => (
+                    <Link key={g.slug} href={`/blog/${g.slug}`}
+                      className="bg-gray-50 hover:bg-green-50 rounded-xl p-3 text-sm text-gray-700 hover:text-green-700 transition-colors">
+                      📖 {g.title} →
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
 
           {/* Sidebar */}
@@ -312,15 +344,33 @@ export default function ScholarshipDetail({ scholarship, related }) {
 
 export async function getServerSideProps({ params }) {
   try {
-    const { getScholarshipBySlug, getFeaturedScholarships, incrementViews } = require('../../lib/db')
+    const { getScholarshipBySlug, getBlogPosts, getDb, incrementViews } = require('../../lib/db')
     const scholarship = await getScholarshipBySlug(params.slug)
-    if (!scholarship) return { props: { scholarship: null, related: [] } }
+    if (!scholarship) return { props: { scholarship: null, related: [], guides: [] } }
     await incrementViews('scholarships', params.slug)
-    const featured = await getFeaturedScholarships(6)
-    const related = featured.filter(s => s.id !== scholarship.id).slice(0, 3)
-    return { props: { scholarship, related } }
+
+    const db = getDb()
+    const rel = await db.execute({
+      sql: `SELECT id, slug, title, country, type, funding_type FROM scholarships
+            WHERE is_active = 1 AND id != ? AND (country = ? OR type = ?)
+            ORDER BY is_featured DESC, id DESC LIMIT 6`,
+      args: [scholarship.id, scholarship.country, scholarship.type],
+    })
+    const related = rel.rows.slice(0, 3).map(r => ({ id: Number(r.id), slug: r.slug, title: r.title, country: r.country, type: r.type, funding_type: r.funding_type }))
+
+    // Pick live blog posts that share words with this listing; fall back to the newest posts.
+    const posts = await getBlogPosts(60)
+    const words = `${scholarship.country} ${scholarship.type} ${scholarship.degree_level} ${scholarship.title}`
+      .toLowerCase().split(/[^a-z]+/).filter(w => w.length > 3)
+    const scored = posts.map(p => {
+      const t = String(p.title).toLowerCase()
+      return { slug: p.slug, title: p.title, score: words.filter(w => t.includes(w)).length }
+    }).sort((a, b) => b.score - a.score)
+    const guides = scored.slice(0, 4).map(({ slug, title }) => ({ slug, title }))
+
+    return { props: { scholarship, related, guides } }
   } catch (e) {
     console.error(e)
-    return { props: { scholarship: null, related: [] } }
+    return { props: { scholarship: null, related: [], guides: [] } }
   }
 }
